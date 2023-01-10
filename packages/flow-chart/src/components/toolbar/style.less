@@ -1,0 +1,65 @@
+// stylelint-disable-next-line
+@import "../../styles/varible.less";
+
+.@{prefixCls}-toolbar-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  display: flex;
+  padding: 20px;
+  font-size: 13px;
+  color: #17181a;
+  pointer-events: none;
+  background: transparent;
+  justify-content: space-between;
+}
+
+.@{prefixCls}-toolbar-left {
+  display: flex;
+  pointer-events: auto;
+  align-items: center;
+}
+.@{prefixCls}-toolbar-right {
+  display: flex;
+  pointer-events: auto;
+}
+.@{prefixCls}-toolbar-btn {
+  width: 24px;
+  height: 24px;
+  margin: 0 4px;
+  background: #fff;
+  border: 1px solid #ebebf6;
+  border-radius: 8px;
+}
+.@{prefixCls}-toolbar-zoom {
+  width: 40px;
+  font-size: 12px;
+  line-height: 20px;
+  color: #292f47;
+  text-align: center;
+}
+.@{prefixCls}-toolbar-item {
+  display: flex;
+  height: 40px;
+  padding: 0 12px;
+  margin-right: 12px;
+  line-height: 40px;
+  user-select: none;
+  background-color: #fff;
+  border: 1px solid rgba(235, 237, 240, 1);
+  border-radius: 2px;
+  align-items: center;
+  // cursor: pointer;
+  :global {
+    .anticon {
+      width: 30px;
+      font-size: 16px;
+      cursor: pointer;
+
+      &:hover {
+        color: rgba(235, 237, 240, 1);
+      }
+    }
+  }
+}

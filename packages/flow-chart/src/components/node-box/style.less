@@ -1,0 +1,84 @@
+@import "../../styles/varible.less";
+
+.@{prefixCls}-node-box-wrapper {
+  display: flex;
+  width: 200px;
+  flex-direction: column;
+  align-items: center;
+}
+
+.@{prefixCls}-end-node-wrapper {
+  display: flex;
+  width: 72px;
+  height: 42px;
+  font-size: 14px;
+  line-height: 22px;
+  color: #17181a;
+  background: #fff;
+  // border: 1px solid $lineColor;
+  border-radius: 8px;
+  align-items: center;
+  justify-content: center;
+}
+
+.@{prefixCls}-node-card-wrapper {
+  position: relative;
+  width: 160px;
+  background: #fff;
+  border: 1px solid #efeff9;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(229, 231, 241, 0.6);
+
+  .@{prefixCls}-node-card-mask {
+    position: relative;
+    padding: 6px 10px 8px;
+    font-size: 12px;
+  }
+
+  &:hover {
+    border: 1px solid #0066fe;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(229, 231, 241, 0.6);
+    .@{prefixCls}-node-card-mask {
+      background-color: @hoverBackground;
+    }
+    // box-shadow: 0 0 0 2px $hoverBackground;
+    .@{prefixCls}-node-card-close-button {
+      z-index: 2;
+      display: block;
+    }
+  }
+  .@{prefixCls}-node-card-title {
+    display: flex;
+    font-size: 14px;
+    line-height: 22px;
+    color: #14143a;
+    align-items: center;
+  }
+  .@{prefixCls}-node-card-content {
+    width: 100%;
+    min-height: 16px;
+    margin-top: 4px;
+    overflow: hidden;
+    font-size: 12px;
+    line-height: 16px;
+    color: rgba(20, 20, 58, 0.4);
+    cursor: pointer;
+
+    span {
+      display: block;
+      width: 100%;
+      overflow: hidden;
+      color: #14143a;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+  .@{prefixCls}-node-card-close-button {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: none;
+    color: #0066fe;
+  }
+}
