@@ -147,9 +147,14 @@ export type FlowTableData<T = PropertiesProps> = {
   nodeKey: string
 
   /**
-   * 父级节点id
+   * 父级节点标识
    */
   preNodeKey?: string
+
+  /**
+   * 子节点标识
+   */
+  nextNodeKey?: string
 
   /**
    * 节点业务类型

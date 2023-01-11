@@ -15,8 +15,7 @@ export type FlowTableInstance = FlowContextProps
 
 const FlowTable = forwardRef<FlowTableInstance>(function FlowTable(_, ref) {
   const flowContext = React.useContext(FlowContext)
-  const { flowData, flowMap, editingNode, prefixCls, customNodeProperties } =
-    flowContext
+  const { flowData, flowMap, editingNode, prefixCls, customNodeProperties } = flowContext
   React.useImperativeHandle(ref, () => ({ ...flowContext }), [flowMap])
   return (
     <div className={`${prefixCls}-flow-table-wrapper`}>
@@ -47,8 +46,7 @@ const App = forwardRef<
   // 开放能力
   React.useImperativeHandle(ref, () => ({
     onAddNode: (props) => flowTableRef.current?.onAddNode?.(props),
-    updateNodeProperties: (props) =>
-      flowTableRef.current?.updateNodeProperties(props),
+    updateNodeProperties: (props) => flowTableRef.current?.updateNodeProperties(props),
     getNodeByKey: (props) => flowTableRef.current?.getNodeByKey(props),
     onClickNode: (props) => flowTableRef.current?.onClickNode?.(props),
     onDeleteNode: (props) => flowTableRef.current?.onDeleteNode?.(props),
