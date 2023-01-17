@@ -77,11 +77,8 @@ const NodeCard: React.FC<NodeCardProps> = (props) => {
         {/* 删除按钮 */}
         {data.preNodeKey && !readonly && !hideDeleteNode && (
           <Popconfirm
-            title={
-              isCondition
-                ? '确定删除该分支，同时删除该分支下所有节点吗？'
-                : '确定删除该节点吗？'
-            }
+            overlayStyle={{ width: '220px' }}
+            title={isCondition ? '确定删除该分支，同时删除该分支下所有节点吗？' : '确定删除该节点吗？'}
             getTooltipContainer={() => divRef.current!}
             onConfirm={handleClose}
             placement="rightTop"

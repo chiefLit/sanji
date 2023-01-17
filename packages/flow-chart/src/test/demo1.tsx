@@ -29,15 +29,7 @@ const typeConfig = {
     nodeTitle: '节点2',
     renderType: RenderTypeEnum.Condition,
     conditionNodeType: 'condition',
-  },
-  condition: {
-    nodeTitle: 'condition',
-    renderType: RenderTypeEnum.Normal,
     condition: {
-      conditionDefaultProperties: {
-        nodeTitle: '分支',
-        propertiesType: 'Type1',
-      },
       defaultPropertiesList: [
         {
           nodeTitle: '分支',
@@ -49,6 +41,11 @@ const typeConfig = {
         },
       ],
     },
+  },
+  condition: {
+    nodeTitle: '分支',
+    renderType: RenderTypeEnum.Condition,
+    propertiesType: 'Type1',
   },
   Type3: {
     nodeTitle: '节点3',

@@ -1,5 +1,6 @@
 import React, { forwardRef } from 'react'
-import { FlowContext, FlowContextProps, FlowProvider } from './context'
+import { FlowContext, FlowProvider } from './context'
+import { FlowContextProps } from './context/type'
 import { FlowTableProps } from './types'
 import { PropertiesDrawer } from './components/properties-drawer'
 import { Toolbar } from './components/toolbar'

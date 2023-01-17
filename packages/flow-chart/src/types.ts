@@ -1,4 +1,4 @@
-import { FlowContextProps } from './context'
+import { FlowContextProps } from './context/type'
 
 /**
  * 流程表入参
