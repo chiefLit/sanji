@@ -70,67 +70,64 @@ const FlowProvider: React.FC<FlowProviderProps> = (props) => {
    * @param newSon 新增节点
    * @param father 目标节点
    */
-  const onAddNode = React.useCallback(
-    (params: {
-      previousNodeKey: string
-      nodeType: string
-      extraProperties?: Record<string, unknown>
-    }) => {
-      const { previousNodeKey, nodeType } = params
-      const { newData, flowMap } = getNewFlowData(flowDataRef.current)
-      const previousNode = flowMap[previousNodeKey]
+  const onAddNode = React.useCallback((params: {
+    previousNodeKey: string
+    nodeType: string
+    extraProperties?: Record<string, unknown>
+  }) => {
+    const { previousNodeKey, nodeType } = params
+    const { newData, flowMap } = getNewFlowData(flowDataRef.current)
+    const previousNode = flowMap[previousNodeKey]
 
-      events.beforeAddNode?.({ previousNode, nodeType })
+    events.beforeAddNode?.({ previousNode, nodeType })
 
-      const mainConf = typeConfig?.[nodeType]
+    const mainConf = typeConfig?.[nodeType]
 
-      if (!mainConf) {
-        console.error(`没找到当前 nodeType: ${mainConf}`)
-        return
-      }
+    if (!mainConf) {
+      console.error(`没找到当前 nodeType: ${mainConf}`)
+      return
+    }
 
-      const newSon: FlowTableData = {
-        nodeKey: getUniqId(),
-        nodeType,
-        renderType: mainConf.renderType,
-        nextNode: previousNode.nextNode,
-        preNodeKey: previousNode.nodeKey,
-        properties: {
-          nodeTitle: mainConf.nodeTitle || nodeType,
-          ...mainConf.defaultProperties,
-        },
-      }
+    const newSon: FlowTableData = {
+      nodeKey: getUniqId(),
+      nodeType,
+      renderType: mainConf.renderType,
+      nextNode: previousNode.nextNode,
+      preNodeKey: previousNode.nodeKey,
+      properties: {
+        nodeTitle: mainConf.nodeTitle || nodeType,
+        ...mainConf.defaultProperties,
+      },
+    }
 
-      if (
-        mainConf.renderType === RenderTypeEnum.Interflow ||
-        mainConf.renderType === RenderTypeEnum.Condition
-      ) {
-        if (mainConf?.conditionNodeType) {
-          const subConf = typeConfig?.[mainConf?.conditionNodeType]
-          if (mainConf?.condition) {
-            newSon.conditionNodes = mainConf.condition.defaultPropertiesList.map(
-              (p) => ({
-                nodeKey: getUniqId(),
-                nodeType: mainConf.conditionNodeType as string,
-                renderType: subConf.renderType,
-                condition: true,
-                properties: { ...p },
-                preNodeKey: newSon.nodeKey,
-              }),
-            )
-          }
+    if (
+      mainConf.renderType === RenderTypeEnum.Interflow ||
+      mainConf.renderType === RenderTypeEnum.Condition
+    ) {
+      if (mainConf?.conditionNodeType) {
+        const subConf = typeConfig?.[mainConf?.conditionNodeType]
+        if (mainConf?.condition) {
+          newSon.conditionNodes = mainConf.condition.defaultPropertiesList.map(
+            (p) => ({
+              nodeKey: getUniqId(),
+              nodeType: mainConf.conditionNodeType as string,
+              renderType: subConf.renderType,
+              condition: true,
+              properties: { ...p },
+              preNodeKey: newSon.nodeKey,
+            }),
+          )
         }
       }
+    }
 
-      if (previousNode.nextNode) {
-        previousNode.nextNode.preNodeKey = newSon.nodeKey
-      }
-      previousNode.nextNode = newSon
-      setFlowData({ ...newData })
-      events.afterAddNode?.({ previousNode, targetNode: newSon })
-    },
-    [events, setFlowData, typeConfig],
-  )
+    if (previousNode.nextNode) {
+      previousNode.nextNode.preNodeKey = newSon.nodeKey
+    }
+    previousNode.nextNode = newSon
+    setFlowData({ ...newData })
+    events.afterAddNode?.({ previousNode, targetNode: newSon })
+  }, [events, setFlowData, typeConfig])
 
   /**
    * 删除节点

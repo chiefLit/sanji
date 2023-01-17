@@ -14,17 +14,22 @@ import './styles/index.less'
  */
 export type FlowTableInstance = FlowContextProps
 
-const FlowTable = forwardRef<FlowTableInstance>(function FlowTable(_, ref) {
+const FlowEngine = forwardRef<FlowTableInstance>(function FlowEngine(_, ref) {
   const flowContext = React.useContext(FlowContext)
   const { flowData, flowMap, editingNode, prefixCls, customNodeProperties } = flowContext
   React.useImperativeHandle(ref, () => ({ ...flowContext }), [flowMap])
   return (
-    <div className={`${prefixCls}-flow-table-wrapper`}>
-      <NodeBox data={flowData} />
+    <>
+      <Toolbar />
+      <MoveStage>
+        <div className={`${prefixCls}-flow-table-wrapper`}>
+          <NodeBox data={flowData} />
+        </div>
+      </MoveStage>
       {!customNodeProperties ? (
         <PropertiesDrawer open={!!editingNode} destroyOnClose />
       ) : null}
-    </div>
+    </>
   )
 })
 
@@ -58,10 +63,7 @@ const App = forwardRef<
   return (
     <StageProvider>
       <FlowProvider {...props}>
-        <Toolbar />
-        <MoveStage>
-          <FlowTable ref={flowTableRef} />
-        </MoveStage>
+        <FlowEngine ref={flowTableRef} />
       </FlowProvider>
     </StageProvider>
   )

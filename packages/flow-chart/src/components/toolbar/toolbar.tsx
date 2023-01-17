@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 import { Button, Divider } from 'antd'
-import { MinusOutlined, PlusOutlined, ArrowLeftOutlined, ArrowRightOutlined, RedoOutlined } from '@ant-design/icons'
+import { MinusOutlined, PlusOutlined, ArrowLeftOutlined, ArrowRightOutlined, RetweetOutlined } from '@ant-design/icons'
 import { FlowContext } from '../../context'
 import { StageContext } from '../move-stage/context'
 import './style.less'
@@ -86,7 +86,7 @@ const Toolbar: React.FC<ToolbarProps> = () => {
     reset: <Button
       className={`${prefixCls}-toolbar-btn`}
       type="text"
-      icon={<RedoOutlined />}
+      icon={<RetweetOutlined />}
       size="small"
       onClick={(e) => {
         e.stopPropagation()
