@@ -1,5 +1,8 @@
 import { FlowContextProps } from './context/type'
 
+export type ActionType = 'ADD_NODE' | 'DELETE_NODE' | 'UPDATE_NODE'
+  | 'ADD_BRANCH' | 'DELETE_BRANCH' | 'CHANGE_BRANCH_INDEX' | 'FORWARD' | 'REVOKE'
+
 /**
  * 流程表入参
  */
@@ -7,13 +10,23 @@ export interface FlowTableProps {
   /**
    * 值
    */
-  value: FlowTableData
+  value: LinkedList
 
   /**
    * 添加节点前
    */
-  onChange?: (data: FlowTableData) => void
+  onChange?: (props: {
+    action: ActionType;
+    node?: LinkedList;
+    addNodes?: LinkedList[];
+    updateNodes?: LinkedList[];
+    deleteNodes?: LinkedList[];
+    flow: LinkedList;
+  }) => void
 
+  /**
+   * 只读
+   */
   readonly?: boolean
 
   /**
@@ -24,19 +37,12 @@ export interface FlowTableProps {
   /**
    * 自定义渲染节点
    */
-  renderNode?: (params: {
-    targetNode: FlowTableData
-    flowContext: FlowContextProps
-  }) => React.ReactNode
+  renderNode?: (params: { targetNode: Node; flowContext: FlowContextProps }) => React.ReactNode
 
   /**
    * 点击添加节点按钮事件，如果绑定该事件默认的逻辑将不执行。(todo：需要将点击【+】和【normal】做一下区别，)
    */
-  onAddNode?: (params: {
-    previousNodeKey: string
-    nodeType: string
-    extraProperties?: Record<string, unknown>
-  }) => void
+  onAddNode?: (params: { previousNodeKey: string; nodeType: string; extraProperties?: Record<string, unknown> }) => void
 
   /**
    * 点击删除节点按钮事件，如果绑定该事件默认的逻辑将不执行。
@@ -46,10 +52,7 @@ export interface FlowTableProps {
   /**
    * 点击添加分支按钮事件，如果绑定该事件默认的逻辑将不执行。
    */
-  onAddBranch?: (params: {
-    targetNodeKey: string
-    extraProperties?: Record<string, unknown>
-  }) => void
+  onAddBranch?: (params: { targetNodeKey: string; extraProperties?: Record<string, unknown> }) => void
 
   /**
    * 点击删除分支按钮事件，如果绑定该事件默认的逻辑将不执行。
@@ -59,57 +62,51 @@ export interface FlowTableProps {
   /**
    * 添加节点前回调
    */
-  beforeAddNode?: (params: {
-    previousNode: FlowTableData
-    nodeType: string
-  }) => void
+  beforeAddNode?: (params: { previousNode: Node; nodeType: string }) => void
 
   /**
    * 添加节点后回调
    */
-  afterAddNode?: (parmas: {
-    previousNode: FlowTableData
-    targetNode: FlowTableData
-  }) => void
+  afterAddNode?: (parmas: { previousNode: Node; targetNode: Node }) => void
 
   /**
    * 删除节点前回调
    */
-  beforeDeleteNode?: (params: { targetNode: FlowTableData }) => void
+  beforeDeleteNode?: (params: { targetNode: Node }) => void
 
   /**
    * 删除节点后回调
    */
-  afterDeleteNode?: (params: { targetNode: FlowTableData }) => void
+  afterDeleteNode?: (params: { targetNode: Node }) => void
 
   /**
    * 添加分支前回调
    */
-  beforeAddBranch?: (params: { targetNode: FlowTableData }) => void
+  beforeAddBranch?: (params: { targetNode: Node }) => void
 
   /**
    * 添加分支后回调
    */
-  afterAddBranch?: (params: { targetNode: FlowTableData }) => void
+  afterAddBranch?: (params: { targetNode: Node }) => void
 
   /**
    * 删除分支前回调
    */
-  beforeDeleteBranch?: (params: { targetBranch: FlowTableData }) => void
+  beforeDeleteBranch?: (params: { targetBranch: Node }) => void
 
   /**
    * 删除分支后回调
    */
-  afterDeleteBranch?: (params: { targetBranch: FlowTableData }) => void
+  afterDeleteBranch?: (params: { targetBranch: Node }) => void
 
   /**
    * 点击添加节点回调函数，设置该回调之后，不执行默认的添加节点逻辑需要自定义
    */
-  onClickAddNodeBtn?: (params: { previousNode: FlowTableData }) => void
+  onClickAddNodeBtn?: (params: { previousNode: Node }) => void
   /**
    * 点击节点回调，设置该回调之后，不执行默认的逻辑
    */
-  onClickNode?: (params: { targetNode: FlowTableData }) => void
+  onClickNode?: (params: { targetNode: Node }) => void
 
   /**
    * 自定义添加节点
@@ -124,64 +121,29 @@ export interface FlowTableProps {
   /**
    * 自定义渲染 toolbar
    */
-  renderToolbar?: (
-    flowData: FlowTableData,
-    context: Pick<FlowContextProps, 'revoke' | 'forward'>,
-  ) => React.ReactNode
+  renderToolbar?: (flowData: Node, context: Pick<FlowContextProps, 'revoke' | 'forward'>,) => React.ReactNode
 
-  changeBranchIndex?: (params: {
-    targetNode: FlowTableData
-    fromIndex: number
-    toIndex: number
-  }) => void
+  /**
+   * 改变分支排序
+   * @param params 
+   * @returns 
+   */
+  changeBranchIndex?: (params: { targetNode: Node; fromIndex: number; toIndex: number }) => void
 }
 
-/**
- * 流程数据
- * 采用链表的结构  LinkedList
- */
-export type FlowTableData<T = PropertiesProps> = {
-  /**
-   * 节点id
-   */
-  nodeKey: string
+export type Node<T = any> = {
+  nodeKey: string;
+  preNodeKey?: string;
+  nextNodeKey?: string;
+  nodeType: string;
+  renderType: RenderTypeEnum | keyof typeof RenderTypeEnum;
+  properties?: T;
+  conditionNodeKeys?: string[];
+}
 
-  /**
-   * 父级节点标识
-   */
-  preNodeKey?: string
-
-  /**
-   * 子节点标识
-   */
-  nextNodeKey?: string
-
-  /**
-   * 节点业务类型
-   */
-  nodeType: string
-
-  /**
-   * 节点渲染类型
-   */
-  renderType: RenderTypeEnum | keyof typeof RenderTypeEnum
-
-  /**
-   * 节点的业务属性，及显示在侧滑窗里面的内容
-   */
-  properties?: T
-
-  /**
-   * 子节点
-   */
-  nextNode?: FlowTableData
-
-  /**
-   * 条件节点
-   */
-  conditionNodes?: FlowTableData[]
-
-  [key: string]: unknown
+export type LinkedList = Node & {
+  nextNode?: LinkedList
+  conditionNodes?: LinkedList[]
 }
 
 export type PropertiesProps = CommonProperties & Record<string, unknown>
@@ -193,8 +155,8 @@ export type TypeConfigItem = {
   nodeTitle: string
   conditionNodeType?: string
   defaultProperties?: Record<string, unknown>
-  hideAddNode?: (targetNode: FlowTableData) => boolean
-  hideDeleteNode?: (targetNode: FlowTableData) => boolean
+  hideAddNode?: (targetNode: Node) => boolean
+  hideDeleteNode?: (targetNode: Node) => boolean
   condition?: {
     conditionDefaultProperties?: Record<string, unknown>
     defaultPropertiesList: Record<string, unknown>[]
@@ -210,13 +172,17 @@ export enum RenderTypeEnum {
    */
   'Normal' = 'Normal',
   /**
-   * 排他节点
+   * 条件节点
    */
   'Condition' = 'Condition',
   /**
+   * 排他节点
+   */
+  'Exclusive' = 'Exclusive',
+  /**
    * 包容节点
    */
-  'Interflow' = 'Interflow',
+  'Inclusive' = 'Inclusive',
   /**
    * 结束节点
    */
@@ -258,7 +224,7 @@ export type FlowTableActions = {
   /**
    * 通过节点ID获取节点
    */
-  getNodeByKey: (id: string) => FlowTableData | undefined
+  getNodeByKey: (id: string) => Node | undefined
 
   /**
    * 前进

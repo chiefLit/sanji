@@ -1,4 +1,4 @@
-import { FlowTableData, FlowTableProps, TypeConfigData } from "../types"
+import { FlowTableProps, LinkedList, PropertiesProps, TypeConfigData } from "../types"
 
 /**
  * 流程相关的状态管理
@@ -19,17 +19,17 @@ export interface FlowContextProps
     | 'readonly'
     | 'renderNode'
   > {
-  flowData: FlowTableData
-  flowMap?: Record<string, FlowTableData>
+  flowData: LinkedList
+  flowMap?: Record<string, LinkedList>
   typeConfig: TypeConfigData
   /**
    * 正在编辑的节点
    */
-  editingNode: FlowTableData | undefined
+  editingNode: LinkedList | undefined
   /**
    * 正在编辑的节点
    */
-  setEditingNode: React.Dispatch<React.SetStateAction<FlowTableData | undefined>>
+  setEditingNode: React.Dispatch<React.SetStateAction<LinkedList | undefined>>
   /**
    * 前进
    */
@@ -45,10 +45,10 @@ export interface FlowContextProps
   /**
    * 通过key去找节点
    */
-  getNodeByKey: (nodeKey: string) => FlowTableData | undefined
+  getNodeByKey: (nodeKey: string) => LinkedList | undefined
   /**
    * 样式前缀，保证和 varible.less 一致。
    */
   prefixCls: string
-  flowHistory: Array<FlowTableData> | []
+  flowHistory: Array<LinkedList> | []
 }

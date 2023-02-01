@@ -1,13 +1,14 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useRef, useState, useEffect } from 'react'
 import { message } from 'antd'
+import { convertLinkedList2Map, findAllNodesFormLL, findLastNodeFormLL, getUniqId, isBranch } from '../utils'
 import { FlowContextProps } from './type'
 import {
-  FlowTableData,
   CommonProperties,
   FlowTableProps,
+  Node,
+  LinkedList,
   RenderTypeEnum,
 } from '../types'
-import { getUniqId } from '../utils'
 
 /**
  * 样式前缀，保证和 varible.less 一致。
@@ -34,16 +35,16 @@ const FlowProvider: React.FC<FlowProviderProps> = (props) => {
     renderNode,
     ...events
   } = props
-  const [flowData, setFlowDataState] = React.useState<FlowTableData>(value)
-  const [flowMap, setFlowMap] = React.useState<Record<string, FlowTableData>>()
-  const [editingNode, setEditingNode] = React.useState<FlowTableData>()
-  const [history, setHistory] = React.useState<FlowTableData[]>([value])
-  const flowDataRef = React.useRef<FlowTableData>(value)
+  const [flowData, setFlowDataState] = useState<LinkedList>(value)
+  const [flowMap, setFlowMap] = useState<Record<string, Node>>()
+  const [editingNode, setEditingNode] = useState<LinkedList>()
+  const [history, setHistory] = useState<LinkedList[]>([value])
+  const flowDataRef = useRef<LinkedList>(value)
 
   /**
    * 设置 Flow 的时候需要先记录一下历史
    */
-  const setFlowData = useCallback((next: FlowTableData) => {
+  const setFlowData = useCallback((next: LinkedList) => {
     setHistory([...history, next])
     setFlowDataState(next)
   }, [history])
@@ -51,18 +52,17 @@ const FlowProvider: React.FC<FlowProviderProps> = (props) => {
   /**
    * 改变节点结构的时候返回新的流程
    */
-  const getNewFlowData = (flowData: FlowTableData) => {
+  const getNewFlowData = (flowData: LinkedList) => {
     const copy = JSON.parse(JSON.stringify(flowData))
-    const flowMap = linkedListToMap(copy)
+    const flowMap = convertLinkedList2Map(copy)
     setFlowMap(flowMap)
     return { newData: copy, flowMap }
   }
 
-  React.useEffect(() => {
+  useEffect(() => {
     flowDataRef.current = flowData
-    const fMap = linkedListToMap(flowData)
+    const fMap = convertLinkedList2Map(flowData)
     setFlowMap(fMap)
-    events.onChange?.(flowData)
   }, [flowData])
 
   /**
@@ -70,7 +70,7 @@ const FlowProvider: React.FC<FlowProviderProps> = (props) => {
    * @param newSon 新增节点
    * @param father 目标节点
    */
-  const onAddNode = React.useCallback((params: {
+  const onAddNode = useCallback((params: {
     previousNodeKey: string
     nodeType: string
     extraProperties?: Record<string, unknown>
@@ -88,42 +88,53 @@ const FlowProvider: React.FC<FlowProviderProps> = (props) => {
       return
     }
 
-    const newSon: FlowTableData = {
+    const newSon: LinkedList = {
       nodeKey: getUniqId(),
       nodeType,
       renderType: mainConf.renderType,
-      nextNode: previousNode.nextNode,
       preNodeKey: previousNode.nodeKey,
+      nextNodeKey: previousNode.nextNode?.nodeKey,
+      nextNode: previousNode.nextNode,
       properties: {
         nodeTitle: mainConf.nodeTitle || nodeType,
         ...mainConf.defaultProperties,
       },
     }
 
-    if (
-      mainConf.renderType === RenderTypeEnum.Interflow ||
-      mainConf.renderType === RenderTypeEnum.Condition
-    ) {
-      if (mainConf?.conditionNodeType) {
-        const subConf = typeConfig?.[mainConf?.conditionNodeType]
-        if (mainConf?.condition) {
-          newSon.conditionNodes = mainConf.condition.defaultPropertiesList.map(
-            (p) => ({
-              nodeKey: getUniqId(),
-              nodeType: mainConf.conditionNodeType as string,
-              renderType: subConf.renderType,
-              condition: true,
-              properties: { ...p },
-              preNodeKey: newSon.nodeKey,
-            }),
-          )
-        }
-      }
+    if (isBranch(mainConf.renderType) && mainConf?.conditionNodeType && mainConf?.condition) {
+      const subConf = typeConfig?.[mainConf?.conditionNodeType]
+      newSon.conditionNodes = mainConf.condition.defaultPropertiesList.map(
+        (p) => ({
+          nodeKey: getUniqId(),
+          nodeType: mainConf.conditionNodeType as string,
+          renderType: subConf.renderType,
+          condition: true,
+          properties: { ...p },
+          preNodeKey: newSon.nodeKey,
+        }),
+      )
+      newSon.conditionNodeKeys = newSon.conditionNodes.map(node => node.nodeKey)
+      // 添加分支节点
+      events.onChange?.({
+        action: 'ADD_NODE',
+        addNodes: [newSon, ...newSon.conditionNodes],
+        updateNodes: [previousNode, newSon.nextNode!].filter(node => node),
+        flow: newData
+      })
+    } else {
+      // 添加普通节点
+      events.onChange?.({
+        action: 'ADD_NODE',
+        addNodes: [newSon],
+        updateNodes: [previousNode, newSon.nextNode!].filter(node => node),
+        flow: newData
+      })
     }
 
     if (previousNode.nextNode) {
       previousNode.nextNode.preNodeKey = newSon.nodeKey
     }
+    previousNode.nextNodeKey = newSon.nodeKey
     previousNode.nextNode = newSon
     setFlowData({ ...newData })
     events.afterAddNode?.({ previousNode, targetNode: newSon })
@@ -133,7 +144,7 @@ const FlowProvider: React.FC<FlowProviderProps> = (props) => {
    * 删除节点
    * @param targetNode 待删除的节点
    */
-  const onDeleteNode = React.useCallback(({ targetNodeKey }: {
+  const onDeleteNode = useCallback(({ targetNodeKey }: {
     targetNodeKey: string
   }) => {
     const { newData, flowMap } = getNewFlowData(flowDataRef.current)
@@ -152,6 +163,12 @@ const FlowProvider: React.FC<FlowProviderProps> = (props) => {
       previousNode.nextNode = undefined
     }
     setFlowData(newData)
+    events.onChange?.({
+      action: 'DELETE_NODE',
+      flow: newData,
+      deleteNodes: [targetNode],
+      updateNodes: [previousNode, targetNode.nextNode!]
+    })
     events.afterDeleteNode?.({ targetNode })
     return newData
   }, [events, setFlowData])
@@ -160,7 +177,7 @@ const FlowProvider: React.FC<FlowProviderProps> = (props) => {
    * 添加分支
    * @param targetNode 需要添加分支的节点
    */
-  const onAddBranch = React.useCallback(({ targetNodeKey, extraProperties }: {
+  const onAddBranch = useCallback(({ targetNodeKey, extraProperties }: {
     targetNodeKey: string;
     extraProperties?: Record<string, unknown>;
   }) => {
@@ -169,19 +186,30 @@ const FlowProvider: React.FC<FlowProviderProps> = (props) => {
     events.beforeAddBranch?.({ targetNode })
     const branchNTData = typeConfig[targetNode.nodeType]
     const conditionNTData = typeConfig[branchNTData?.conditionNodeType as string]
-    targetNode.conditionNodes?.push({
+    const newBranch = {
       nodeKey: getUniqId(),
       nodeType: (branchNTData.conditionNodeType as string) || targetNode.nodeType,
       renderType: targetNode.renderType,
-      condition: true,
+      preNodeKey: targetNode.nodeKey,
       properties: {
         nodeTitle: conditionNTData.nodeTitle || branchNTData?.conditionNodeType,
         ...extraProperties,
         ...(conditionNTData.defaultProperties),
       },
-      preNodeKey: targetNode.nodeKey,
-    })
+    }
+    if (targetNode.renderType === RenderTypeEnum.Exclusive) {
+      targetNode.conditionNodes?.splice(targetNode.conditionNodes?.length - 1, 0, newBranch)
+    } else {
+      targetNode.conditionNodes?.push(newBranch)
+    }
+    targetNode.conditionNodeKeys = targetNode.conditionNodes?.map(node => node.nodeKey)
     setFlowData(newData)
+    events.onChange?.({
+      action: 'ADD_BRANCH',
+      flow: newData,
+      addNodes: [newBranch],
+      updateNodes: [targetNode],
+    })
     events.afterAddBranch?.({ targetNode })
   }, [events, setFlowData, typeConfig])
 
@@ -189,7 +217,7 @@ const FlowProvider: React.FC<FlowProviderProps> = (props) => {
    * 删除分支
    * @param targetNode 需要删除的节点 [bug]
    */
-  const onDeleteBranch = React.useCallback(({ targetBranchKey }: {
+  const onDeleteBranch = useCallback(({ targetBranchKey }: {
     targetBranchKey: string
   }) => {
     const { newData, flowMap } = getNewFlowData(flowDataRef.current)
@@ -197,13 +225,16 @@ const FlowProvider: React.FC<FlowProviderProps> = (props) => {
     events.beforeDeleteBranch?.({ targetBranch })
     if (!flowMap || !targetBranch.preNodeKey) return
     const previousNode = flowMap[targetBranch.preNodeKey]
-    if (
-      previousNode.conditionNodes?.length &&
-      previousNode.conditionNodes?.length > 2
-    ) {
-      previousNode.conditionNodes = previousNode.conditionNodes?.filter(
-        (item) => item.nodeKey !== targetBranch.nodeKey,
-      )
+    if (previousNode.conditionNodes?.length && previousNode.conditionNodes?.length > 2) {
+      previousNode.conditionNodes = previousNode.conditionNodes?.filter((item) => item.nodeKey !== targetBranch.nodeKey)
+      previousNode.conditionNodeKeys = previousNode.conditionNodes.map(node => node.nodeKey)
+      // 分支大于2 ok 
+      events.onChange?.({
+        action: 'DELETE_BRANCH',
+        flow: newData,
+        deleteNodes: [...findAllNodesFormLL(targetBranch)],
+        updateNodes: [previousNode],
+      })
     } else {
       // 分支主节点
       const targetNode = previousNode
@@ -214,24 +245,43 @@ const FlowProvider: React.FC<FlowProviderProps> = (props) => {
       }
       const pNode = flowMap[targetNode.preNodeKey]
       // 当删除剩余最后两条分支a、b时，删除a需要保留b内的所有节点替换分支节点。
-      const reservedNode = previousNode.conditionNodes?.find((item) => item.nodeKey !== targetBranch.nodeKey)?.nextNode
-      // 保留节点内容
-      if (reservedNode) {
-        const reservedLastNode = findLastNode(reservedNode)
+      // 另一条分支
+      const reservedCondition = previousNode.conditionNodes?.find((item) => item.nodeKey !== targetBranch.nodeKey)
+      const reservedBranch = reservedCondition?.nextNode
+
+      if (reservedBranch) {
+        // 存在保留分支
+        const reservedLastNode = findLastNodeFormLL(reservedBranch)
         if (reservedLastNode?.nodeKey) {
-          reservedNode.preNodeKey = pNode?.nodeKey
-          pNode.nextNode = reservedNode
+          reservedBranch.preNodeKey = pNode?.nodeKey
+          pNode.nextNode = reservedBranch
           reservedLastNode.nextNode = targetNode.nextNode
         } else {
           pNode.nextNode = undefined
         }
+        // 分支等于2 ok 
+        events.onChange?.({
+          action: 'DELETE_BRANCH',
+          flow: newData,
+          // 删除的整条分支，分支父节点，保留分支的条件节点
+          deleteNodes: [targetNode, ...findAllNodesFormLL(targetBranch), reservedCondition],
+          updateNodes: [pNode, reservedBranch, reservedLastNode, reservedLastNode.nextNode!].filter(node => node),
+        })
       } else {
+        // 不存在保留分支
         if (targetNode.nextNode?.nodeKey) {
           targetNode.nextNode.preNodeKey = pNode?.nodeKey
           pNode.nextNode = targetNode.nextNode
         } else {
           pNode.nextNode = undefined
         }
+        // 分支等于2 ok
+        events.onChange?.({
+          action: 'DELETE_BRANCH',
+          flow: newData,
+          deleteNodes: [targetNode, ...findAllNodesFormLL(targetBranch), reservedCondition!],
+          updateNodes: [pNode, pNode.nextNode!].filter(node => node),
+        })
       }
     }
     setFlowData(newData)
@@ -269,6 +319,11 @@ const FlowProvider: React.FC<FlowProviderProps> = (props) => {
           index === history.length - 1 ? newData : item,
         ),
       )
+      events.onChange?.({
+        action: 'UPDATE_NODE',
+        flow: newData,
+        updateNodes: [currentNode],
+      })
     }
   }, [flowData, getNodeByKey, history])
 
@@ -281,6 +336,7 @@ const FlowProvider: React.FC<FlowProviderProps> = (props) => {
       message.info('无法前进')
     } else {
       setFlowDataState(history[index + 1])
+      events.onChange?.({ action: 'FORWARD', flow: history[index + 1] })
     }
   }, [flowData, history])
 
@@ -293,6 +349,7 @@ const FlowProvider: React.FC<FlowProviderProps> = (props) => {
       message.info('无法撤回')
     } else {
       setFlowDataState(history[index - 1])
+      events.onChange?.({ action: 'REVOKE', flow: history[index - 1] })
     }
   }, [flowData, history])
 
@@ -300,7 +357,7 @@ const FlowProvider: React.FC<FlowProviderProps> = (props) => {
    * 改变分支顺序
    */
   const changeBranchIndex = useCallback((params: {
-    targetNode: FlowTableData
+    targetNode: LinkedList
     fromIndex: number
     toIndex: number
   }) => {
@@ -314,6 +371,8 @@ const FlowProvider: React.FC<FlowProviderProps> = (props) => {
     if (!toBranch) return
     nextNode.conditionNodes[toIndex] = formBranch
     nextNode.conditionNodes[fromIndex] = toBranch
+    nextNode.conditionNodeKeys = nextNode.conditionNodes.map(node => node.nodeKey)
+    events.onChange?.({ action: 'CHANGE_BRANCH_INDEX', node: nextNode, flow: newData })
     setFlowData(newData)
   }, [setFlowData])
 
@@ -376,35 +435,6 @@ const FlowProvider: React.FC<FlowProviderProps> = (props) => {
       {children}
     </FlowContext.Provider>
   )
-}
-
-
-/**
- * 寻找当前链表中最后一位
- * @param node 
- * @returns 
- */
-const findLastNode = (node: FlowTableData): FlowTableData => {
-  return node?.nextNode ? findLastNode(node?.nextNode) : node
-}
-
-/**
- * 链表数据转map
- * @param data
- * @returns
- */
-const linkedListToMap = (data: FlowTableData) => {
-  const result: Record<string, FlowTableData> = {}
-  result[data.nodeKey] = Object.assign(data)
-  if (data?.nextNode) {
-    Object.assign(result, linkedListToMap(data?.nextNode))
-  }
-  if (data?.conditionNodes) {
-    data?.conditionNodes.forEach((node) => {
-      Object.assign(result, linkedListToMap(node))
-    })
-  }
-  return result
 }
 
 export { FlowContext, FlowProvider }

@@ -1,12 +1,12 @@
 import React from 'react'
 import { Button } from 'antd'
 import { PlusOutlined } from '@ant-design/icons'
-import { FlowTableData, RenderTypeEnum } from '../../types'
+import { Node } from '../../types'
 import { FlowContext } from '../../context'
 import './style.less'
 
 interface AddBranchButtonProps {
-  data: FlowTableData
+  data: Node
 }
 
 const AddBranchButton: React.FC<AddBranchButtonProps> = (props) => {

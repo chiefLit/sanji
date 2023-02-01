@@ -1,13 +1,13 @@
-import FlowChart from '../index'
-import { RenderTypeEnum, FlowTableData } from '../types'
+import FlowChart, { convertMap2LinkedList } from '../index'
+import { RenderTypeEnum, LinkedList, Node } from '../types'
 
-export const mock1: FlowTableData = {
+export const mock1: LinkedList = {
   nodeKey: '1',
-  nodeType: 'type1',
+  nodeType: 'Normal',
   renderType: RenderTypeEnum.Normal,
   nextNode: {
     nodeKey: '2',
-    nodeType: 'type4',
+    nodeType: 'End',
     renderType: RenderTypeEnum.End,
     properties: {
       nodeTitle: '结束',
@@ -20,19 +20,43 @@ export const mock1: FlowTableData = {
   },
 }
 
+const mock1map: Record<string, Node> = {
+  start: {
+    nodeKey: 'start',
+    nodeType: 'Normal',
+    renderType: RenderTypeEnum.Normal,
+    nextNodeKey: 'end',
+    properties: {
+      nodeTitle: '123',
+      nodeContent: '节点1',
+    },
+  },
+  end: {
+    nodeKey: 'end',
+    nodeType: 'End',
+    renderType: RenderTypeEnum.End,
+    preNodeKey: 'start',
+    properties: {
+      nodeTitle: '结束',
+      nodeContent: '节点2',
+    },
+  }
+}
+
 const typeConfig = {
-  Type1: {
-    nodeTitle: '节点1',
+  Normal: {
+    nodeTitle: '一般',
     renderType: RenderTypeEnum.Normal,
   },
-  Type2: {
-    nodeTitle: '节点2',
-    renderType: RenderTypeEnum.Condition,
-    conditionNodeType: 'condition',
+  Exclusive: {
+    nodeTitle: '排他',
+    renderType: RenderTypeEnum.Exclusive,
+    nodeType: 'Exclusive',
+    conditionNodeType: 'Condition',
     condition: {
       defaultPropertiesList: [
         {
-          nodeTitle: '分支',
+          nodeTitle: '条件',
           propertiesType: 'Type1',
         },
         {
@@ -42,25 +66,40 @@ const typeConfig = {
       ],
     },
   },
-  condition: {
+  Inclusive: {
+    nodeTitle: '并行',
+    renderType: RenderTypeEnum.Inclusive,
+    nodeType: 'Inclusive',
+    conditionNodeType: 'Condition',
+    condition: {
+      defaultPropertiesList: [
+        {
+          nodeTitle: '分支',
+          propertiesType: 'Type1',
+        },
+        {
+          nodeTitle: '分支',
+          propertiesType: 'Type1',
+        },
+      ],
+    },
+  },
+  Condition: {
     nodeTitle: '分支',
     renderType: RenderTypeEnum.Condition,
     propertiesType: 'Type1',
   },
-  Type3: {
-    nodeTitle: '节点3',
-    renderType: RenderTypeEnum.Interflow,
-  },
-  Type4: {
+  End: {
     nodeTitle: 'end不能被添加',
     renderType: RenderTypeEnum.End,
   },
 }
 
 export default function demo1() {
+  const linkedList = convertMap2LinkedList(mock1map, 'start')
   return (
     <FlowChart
-      value={mock1}
+      value={linkedList}
       onChange={(value) => {
         console.log(`onChange `, value)
       }}

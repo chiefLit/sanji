@@ -100,13 +100,13 @@ const Toolbar: React.FC<ToolbarProps> = () => {
   return (
     <div className={`${prefixCls}-toolbar-wrapper`}>
       <div className={`${prefixCls}-toolbar-left`} id="_toolbar_left">
-        {!readonly && (
+        {/* {!readonly && (
           <>
             {btns.revoke}
             {btns.forward}
             <Divider type="vertical" />
           </>
-        )}
+        )} */}
 
         {btns.zoomOut}
         <div className={`${prefixCls}-toolbar-zoom`}>{Math.floor(zoom)}%</div>

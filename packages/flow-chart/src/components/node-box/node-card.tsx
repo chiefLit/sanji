@@ -1,14 +1,14 @@
 import React, { useMemo, useRef } from 'react'
 import { Button, Tooltip, Popconfirm } from 'antd'
 import { CloseOutlined } from '@ant-design/icons'
-import { FlowTableData, RenderTypeEnum } from '../../types'
+import { LinkedList, RenderTypeEnum } from '../../types'
 import { FlowContext } from '../../context'
 import { EditableTitle } from '../editable-title/editable-title'
 import './style.less'
+import { isBranch } from '../../utils'
 
 interface NodeCardProps {
-  data: FlowTableData
-  onChange?: (value: FlowTableData) => void
+  data: LinkedList
 }
 
 /**
@@ -64,13 +64,6 @@ const NodeCard: React.FC<NodeCardProps> = (props) => {
     )
   }
 
-  const isCondition = useMemo(
-    () =>
-      data.renderType === RenderTypeEnum.Condition ||
-      data.renderType === RenderTypeEnum.Interflow,
-    [data],
-  )
-
   const renderNotEnd = () => {
     return (
       <section className={`${prefixCls}-node-card-wrapper`} ref={divRef}>
@@ -78,7 +71,7 @@ const NodeCard: React.FC<NodeCardProps> = (props) => {
         {data.preNodeKey && !readonly && !hideDeleteNode && (
           <Popconfirm
             overlayStyle={{ width: '220px' }}
-            title={isCondition ? '确定删除该分支，同时删除该分支下所有节点吗？' : '确定删除该节点吗？'}
+            title={isBranch(data.renderType) ? '确定删除该分支，同时删除该分支下所有节点吗？' : '确定删除该节点吗？'}
             getTooltipContainer={() => divRef.current!}
             onConfirm={handleClose}
             placement="rightTop"

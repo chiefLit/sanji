@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 import { LeftOutlined, RightOutlined } from '@ant-design/icons'
-import { FlowTableData } from '../../types'
+import { LinkedList, Node } from '../../types'
 import { NodeBox } from '../node-box/node-box'
 import { AddNodeButton } from '../add-node-button/add-node-button'
 import { AddBranchButton } from './add-branch-button'
@@ -8,7 +8,7 @@ import { FlowContext } from '../../context'
 import './style.less'
 
 interface BranchBoxProps {
-  data: FlowTableData
+  data: LinkedList
 }
 
 const BranchBox: React.FC<BranchBoxProps> = (props) => {

@@ -1,12 +1,12 @@
 import React from 'react'
 import { Button, Drawer } from 'antd'
 import { PlusOutlined } from '@ant-design/icons'
-import { FlowTableData } from '../../types'
+import { Node } from '../../types'
 import { FlowContext } from '../../context'
 import './style.less'
 
 interface AddNodeButtonProps {
-  data: FlowTableData
+  data: Node
   hideButton?: boolean
 }
 

@@ -1,5 +1,5 @@
 import React, { useContext, useMemo } from 'react'
-import { FlowTableData, RenderTypeEnum } from '../../types'
+import { LinkedList, RenderTypeEnum } from '../../types'
 import { AddNodeButton } from '../add-node-button/add-node-button'
 import { NodeCard } from './node-card'
 import { FlowContext } from '../../context'
@@ -7,7 +7,7 @@ import { BranchBox } from '../branch-box'
 import './style.less'
 
 interface NodeBoxProps {
-  data: FlowTableData
+  data: LinkedList
 }
 
 const NodeBox: React.FC<NodeBoxProps> = (props) => {

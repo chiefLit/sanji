@@ -7,12 +7,14 @@ import { Toolbar } from './components/toolbar'
 import { MoveStage } from './components/move-stage'
 import { StageProvider } from './components/move-stage/context'
 import { NodeBox } from './components/node-box/node-box'
+import { convertLinkedList2Map, convertMap2LinkedList } from './utils'
 import './styles/index.less'
 
 /**
  * 先全量透出之后整理 todo
  */
 export type FlowTableInstance = FlowContextProps
+export { convertLinkedList2Map, convertMap2LinkedList }
 
 const FlowEngine = forwardRef<FlowTableInstance>(function FlowEngine(_, ref) {
   const flowContext = React.useContext(FlowContext)
@@ -51,13 +53,13 @@ const App = forwardRef<
 
   // 开放能力
   React.useImperativeHandle(ref, () => ({
-    onAddNode: (props) => flowTableRef.current?.onAddNode?.(props),
-    updateNodeProperties: (props) => flowTableRef.current?.updateNodeProperties(props),
-    getNodeByKey: (props) => flowTableRef.current?.getNodeByKey(props),
-    onClickNode: (props) => flowTableRef.current?.onClickNode?.(props),
-    onDeleteNode: (props) => flowTableRef.current?.onDeleteNode?.(props),
-    onDeleteBranch: (props) => flowTableRef.current?.onDeleteBranch?.(props),
-    setEditingNode: (props) => flowTableRef.current?.setEditingNode?.(props),
+    onAddNode: (p) => flowTableRef.current?.onAddNode?.(p),
+    updateNodeProperties: (p) => flowTableRef.current?.updateNodeProperties(p),
+    getNodeByKey: (p) => flowTableRef.current?.getNodeByKey(p),
+    onClickNode: (p) => flowTableRef.current?.onClickNode?.(p),
+    onDeleteNode: (p) => flowTableRef.current?.onDeleteNode?.(p),
+    onDeleteBranch: (p) => flowTableRef.current?.onDeleteBranch?.(p),
+    setEditingNode: (p) => flowTableRef.current?.setEditingNode?.(p),
   }))
 
   return (
