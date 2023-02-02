@@ -38,13 +38,12 @@ const FlowProvider: React.FC<FlowProviderProps> = (props) => {
   /**
    * 设置 Flow 的时候需要先记录一下历史，（操作记录 和 历史记录 没有什么好的方式传递操作记录）
    */
-  const setFlowData = setFlowDataState
-  // const setFlowData = useCallback((next: LinkedList) => {
-  //   setHistory([...history, next])
-  //   setFlowDataState(next)
-  // }, [history])
+  const setFlowData = useCallback((next: LinkedList) => {
+    setHistory([...history, next])
+    setFlowDataState(next)
+  }, [history])
 
-  /**
+  /**w
    * 改变节点结构的时候返回新的流程
    */
   const getNewFlowData = (flowData: LinkedList) => {
@@ -260,7 +259,11 @@ const FlowProvider: React.FC<FlowProviderProps> = (props) => {
           flow: newData,
           // 删除的整条分支，分支父节点，保留分支的条件节点
           deleteNodes: [targetNode, ...findAllNodesFormLL(targetBranch), reservedCondition],
-          updateNodes: [pNode, reservedBranch, reservedLastNode, reservedLastNode.nextNode!].filter(node => node),
+          updateNodes: [pNode, reservedBranch, reservedLastNode, reservedLastNode.nextNode!].reduce((result, node) => {
+            const exist = node && result.find(item => item.nodeKey === node.nodeKey)
+            if (!exist) result.push(node)
+            return result
+          }, [] as LinkedList[]),
         })
       } else {
         // 不存在保留分支
