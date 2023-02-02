@@ -2,13 +2,7 @@ import React, { useCallback, useRef, useState, useEffect } from 'react'
 import { message } from 'antd'
 import { convertLinkedList2Map, findAllNodesFormLL, findLastNodeFormLL, getUniqId, isBranch } from '../utils'
 import { FlowContextProps } from './type'
-import {
-  CommonProperties,
-  FlowTableProps,
-  Node,
-  LinkedList,
-  RenderTypeEnum,
-} from '../types'
+import { CommonProperties, FlowTableProps, LinkedList, RenderTypeEnum } from '../types'
 
 /**
  * 样式前缀，保证和 varible.less 一致。
@@ -36,18 +30,19 @@ const FlowProvider: React.FC<FlowProviderProps> = (props) => {
     ...events
   } = props
   const [flowData, setFlowDataState] = useState<LinkedList>(value)
-  const [flowMap, setFlowMap] = useState<Record<string, Node>>()
+  const [flowMap, setFlowMap] = useState<Record<string, LinkedList>>()
   const [editingNode, setEditingNode] = useState<LinkedList>()
   const [history, setHistory] = useState<LinkedList[]>([value])
   const flowDataRef = useRef<LinkedList>(value)
 
   /**
-   * 设置 Flow 的时候需要先记录一下历史
+   * 设置 Flow 的时候需要先记录一下历史，（操作记录 和 历史记录 没有什么好的方式传递操作记录）
    */
-  const setFlowData = useCallback((next: LinkedList) => {
-    setHistory([...history, next])
-    setFlowDataState(next)
-  }, [history])
+  const setFlowData = setFlowDataState
+  // const setFlowData = useCallback((next: LinkedList) => {
+  //   setHistory([...history, next])
+  //   setFlowDataState(next)
+  // }, [history])
 
   /**
    * 改变节点结构的时候返回新的流程
@@ -188,7 +183,7 @@ const FlowProvider: React.FC<FlowProviderProps> = (props) => {
     const conditionNTData = typeConfig[branchNTData?.conditionNodeType as string]
     const newBranch = {
       nodeKey: getUniqId(),
-      nodeType: (branchNTData.conditionNodeType as string) || targetNode.nodeType,
+      nodeType: branchNTData.conditionNodeType!,
       renderType: targetNode.renderType,
       preNodeKey: targetNode.nodeKey,
       properties: {
@@ -328,6 +323,29 @@ const FlowProvider: React.FC<FlowProviderProps> = (props) => {
   }, [flowData, getNodeByKey, history])
 
   /**
+   * 改变分支顺序
+   */
+  const changeBranchIndex = useCallback((params: {
+    targetNode: LinkedList
+    fromIndex: number
+    toIndex: number
+  }) => {
+    const { targetNode, fromIndex, toIndex } = params
+    const { newData, flowMap } = getNewFlowData(flowDataRef.current)
+    const nextNode = flowMap[targetNode.nodeKey]
+    if (!nextNode.conditionNodes) return
+    const formBranch = nextNode.conditionNodes?.[fromIndex]
+    const toBranch = nextNode.conditionNodes?.[toIndex]
+    if (!formBranch) return
+    if (!toBranch) return
+    nextNode.conditionNodes[toIndex] = formBranch
+    nextNode.conditionNodes[fromIndex] = toBranch
+    nextNode.conditionNodeKeys = nextNode.conditionNodes.map(node => node.nodeKey)
+    events.onChange?.({ action: 'CHANGE_BRANCH_INDEX', updateNodes: [nextNode], flow: newData })
+    setFlowData(newData)
+  }, [setFlowData])
+
+  /**
    * 前进
    */
   const forward = useCallback(() => {
@@ -352,29 +370,6 @@ const FlowProvider: React.FC<FlowProviderProps> = (props) => {
       events.onChange?.({ action: 'REVOKE', flow: history[index - 1] })
     }
   }, [flowData, history])
-
-  /**
-   * 改变分支顺序
-   */
-  const changeBranchIndex = useCallback((params: {
-    targetNode: LinkedList
-    fromIndex: number
-    toIndex: number
-  }) => {
-    const { targetNode, fromIndex, toIndex } = params
-    const { newData, flowMap } = getNewFlowData(flowDataRef.current)
-    const nextNode = flowMap[targetNode.nodeKey]
-    if (!nextNode.conditionNodes) return
-    const formBranch = nextNode.conditionNodes?.[fromIndex]
-    const toBranch = nextNode.conditionNodes?.[toIndex]
-    if (!formBranch) return
-    if (!toBranch) return
-    nextNode.conditionNodes[toIndex] = formBranch
-    nextNode.conditionNodes[fromIndex] = toBranch
-    nextNode.conditionNodeKeys = nextNode.conditionNodes.map(node => node.nodeKey)
-    events.onChange?.({ action: 'CHANGE_BRANCH_INDEX', node: nextNode, flow: newData })
-    setFlowData(newData)
-  }, [setFlowData])
 
   const providerValue = React.useMemo(() => {
     return {

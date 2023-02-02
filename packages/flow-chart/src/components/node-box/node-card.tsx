@@ -26,6 +26,7 @@ const NodeCard: React.FC<NodeCardProps> = (props) => {
     prefixCls,
     customNodeProperties,
     readonly,
+    flowData
   } = React.useContext(FlowContext)
 
   const hideDeleteNode = useMemo(
@@ -68,7 +69,7 @@ const NodeCard: React.FC<NodeCardProps> = (props) => {
     return (
       <section className={`${prefixCls}-node-card-wrapper`} ref={divRef}>
         {/* 删除按钮 */}
-        {data.preNodeKey && !readonly && !hideDeleteNode && (
+        {data.nodeKey !== flowData.nodeKey && !readonly && !hideDeleteNode && (
           <Popconfirm
             overlayStyle={{ width: '220px' }}
             title={isBranch(data.renderType) ? '确定删除该分支，同时删除该分支下所有节点吗？' : '确定删除该节点吗？'}
