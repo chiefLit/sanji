@@ -8,15 +8,20 @@ import './style.less'
 interface AddNodeButtonProps {
   data: Node
   hideButton?: boolean
+  isLoop?: boolean
 }
 
 const AddNodeButton: React.FC<AddNodeButtonProps> = (props) => {
-  const { data, hideButton } = props
-  const { onAddNode, typeConfig, prefixCls, onClickAddNodeBtn, customAddNode, readonly, } = React.useContext(FlowContext)
+  const { data, hideButton, isLoop } = props
+  const { onAddNode, onAddLoopNode, typeConfig, prefixCls, onClickAddNodeBtn, customAddNode, readonly, } = React.useContext(FlowContext)
   const [open, setOpen] = React.useState(false)
 
   const handleClick = (nodeType: string) => {
-    onAddNode?.({ nodeType, previousNodeKey: data.nodeKey })
+    if (isLoop) {
+      onAddLoopNode?.({ nodeType, previousNodeKey: data.nodeKey })
+    } else {
+      onAddNode?.({ nodeType, previousNodeKey: data.nodeKey })
+    }
   }
 
   const content = Object.keys(typeConfig)
@@ -41,7 +46,7 @@ const AddNodeButton: React.FC<AddNodeButtonProps> = (props) => {
         <Button
           icon={<PlusOutlined />}
           onClick={() => {
-            onClickAddNodeBtn?.({ previousNode: data })
+            onClickAddNodeBtn?.({ previousNode: data, isLoop })
             setOpen(true)
           }}
           shape="circle"

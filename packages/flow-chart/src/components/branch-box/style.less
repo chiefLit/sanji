@@ -11,6 +11,7 @@
 .@{prefixCls}-branch-box-content {
   z-index: 1;
   display: flex;
+  margin-top: 15px;
   background: @background;
   border-top: 1px solid @lineColor;
   border-bottom: 1px solid @lineColor;
@@ -74,8 +75,7 @@
   margin-top: -16px;
   margin-bottom: 16px;
   overflow: hidden;
-  border: 1px solid #dcdeeb;
-  // background: #dcdeeb;
+  border: 1px solid @lineColor;
   border-radius: 3px;
   align-items: center;
   justify-content: center;
@@ -89,7 +89,7 @@
     align-items: center;
     justify-content: center;
     &.@{prefixCls}-branch-left-btn {
-      border-right: 1px solid #dcdeeb;
+      border-right: 1px solid @lineColor;
       border-radius: 2px 0 0 2px;
 
       &:hover {
@@ -97,7 +97,7 @@
       }
     }
     &.@{prefixCls}-branch-right-btn {
-      border-left: 1px solid #dcdeeb;
+      border-left: 1px solid @lineColor;
       border-radius: 0 2px 2px 0;
 
       &:hover {
@@ -115,7 +115,7 @@
     font-weight: 500;
     line-height: 16px;
     color: #fff;
-    background: #dcdeeb;
+    background: @lineColor;
   }
 
   &:hover {
@@ -141,8 +141,8 @@
 
 .@{prefixCls}-add-branch-button {
   position: absolute !important;
-  z-index: 111111;
-  top: 0;
+  z-index: 1;
+  top: 15px;
   left: 50%;
   width: 24px;
   height: 24px;

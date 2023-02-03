@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 import { LeftOutlined, RightOutlined } from '@ant-design/icons'
-import { LinkedList, Node } from '../../types'
+import { LinkedList } from '../../types'
 import { NodeBox } from '../node-box/node-box'
 import { AddNodeButton } from '../add-node-button/add-node-button'
 import { AddBranchButton } from './add-branch-button'

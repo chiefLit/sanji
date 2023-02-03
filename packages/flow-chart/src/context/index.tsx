@@ -43,7 +43,7 @@ const FlowProvider: React.FC<FlowProviderProps> = (props) => {
     setFlowDataState(next)
   }, [history])
 
-  /**w
+  /**
    * 改变节点结构的时候返回新的流程
    */
   const getNewFlowData = (flowData: LinkedList) => {
@@ -58,6 +58,79 @@ const FlowProvider: React.FC<FlowProviderProps> = (props) => {
     const fMap = convertLinkedList2Map(flowData)
     setFlowMap(fMap)
   }, [flowData])
+
+  const onAddLoopNode = useCallback((params: {
+    previousNodeKey: string
+    nodeType: string
+    extraProperties?: Record<string, unknown>
+    isLoop?: boolean
+  }) => {
+    const { previousNodeKey, nodeType, isLoop } = params
+    const { newData, flowMap } = getNewFlowData(flowDataRef.current)
+    const loopMainNode = flowMap[previousNodeKey]
+
+    events.beforeAddNode?.({ previousNode: loopMainNode, nodeType, isLoop: true })
+
+    const mainConf = typeConfig?.[nodeType]
+
+    if (!mainConf) {
+      console.error(`没找到当前 nodeType: ${mainConf}`)
+      return
+    }
+
+    const newSon: LinkedList = {
+      nodeKey: getUniqId(),
+      nodeType,
+      renderType: mainConf.renderType,
+      preNodeKey: loopMainNode.nodeKey,
+      nextNodeKey: loopMainNode.loopNodeKey,
+      nextNode: loopMainNode.loopNode,
+      properties: {
+        nodeTitle: mainConf.nodeTitle || nodeType,
+        ...mainConf.defaultProperties,
+      },
+    }
+    loopMainNode.loopNode = newSon
+    loopMainNode.loopNodeKey = newSon.nodeKey
+
+    if (loopMainNode.loopNode && loopMainNode.loopNodeKey) {
+      loopMainNode.loopNode.preNodeKey = newSon.nodeKey
+    }
+
+    if (isBranch(mainConf.renderType) && mainConf?.conditionNodeType && mainConf?.condition) {
+      const subConf = typeConfig?.[mainConf?.conditionNodeType]
+      newSon.conditionNodes = mainConf.condition.defaultPropertiesList.map(
+        (p) => ({
+          nodeKey: getUniqId(),
+          nodeType: mainConf.conditionNodeType as string,
+          renderType: subConf.renderType,
+          condition: true,
+          properties: { ...p },
+          preNodeKey: newSon.nodeKey,
+        }),
+      )
+      newSon.conditionNodeKeys = newSon.conditionNodes.map(node => node.nodeKey)
+      // 添加分支节点
+      events.onChange?.({
+        action: 'ADD_NODE',
+        addNodes: [newSon, ...newSon.conditionNodes],
+        updateNodes: [loopMainNode, newSon.nextNode!].filter(node => node),
+        flow: newData
+      })
+    } else {
+      // 添加普通节点
+      events.onChange?.({
+        action: 'ADD_NODE',
+        addNodes: [newSon],
+        updateNodes: [loopMainNode, newSon.nextNode!].filter(node => node),
+        flow: newData
+      })
+    }
+
+
+    setFlowData({ ...newData })
+    events.afterAddNode?.({ previousNode: loopMainNode, targetNode: newSon, isLoop: true })
+  }, [events, setFlowData, typeConfig])
 
   /**
    * 添加节点
@@ -95,6 +168,12 @@ const FlowProvider: React.FC<FlowProviderProps> = (props) => {
       },
     }
 
+    if (previousNode.nextNode) {
+      previousNode.nextNode.preNodeKey = newSon.nodeKey
+    }
+    previousNode.nextNodeKey = newSon.nodeKey
+    previousNode.nextNode = newSon
+
     if (isBranch(mainConf.renderType) && mainConf?.conditionNodeType && mainConf?.condition) {
       const subConf = typeConfig?.[mainConf?.conditionNodeType]
       newSon.conditionNodes = mainConf.condition.defaultPropertiesList.map(
@@ -125,11 +204,6 @@ const FlowProvider: React.FC<FlowProviderProps> = (props) => {
       })
     }
 
-    if (previousNode.nextNode) {
-      previousNode.nextNode.preNodeKey = newSon.nodeKey
-    }
-    previousNode.nextNodeKey = newSon.nodeKey
-    previousNode.nextNode = newSon
     setFlowData({ ...newData })
     events.afterAddNode?.({ previousNode, targetNode: newSon })
   }, [events, setFlowData, typeConfig])
@@ -156,13 +230,14 @@ const FlowProvider: React.FC<FlowProviderProps> = (props) => {
     } else {
       previousNode.nextNode = undefined
     }
-    setFlowData(newData)
+    const nodes = targetNode.loopNode ? findAllNodesFormLL(targetNode.loopNode) : []
     events.onChange?.({
       action: 'DELETE_NODE',
       flow: newData,
-      deleteNodes: [targetNode],
+      deleteNodes: [targetNode, ...nodes],
       updateNodes: [previousNode, targetNode.nextNode!]
     })
+    setFlowData(newData)
     events.afterDeleteNode?.({ targetNode })
     return newData
   }, [events, setFlowData])
@@ -197,13 +272,13 @@ const FlowProvider: React.FC<FlowProviderProps> = (props) => {
       targetNode.conditionNodes?.push(newBranch)
     }
     targetNode.conditionNodeKeys = targetNode.conditionNodes?.map(node => node.nodeKey)
-    setFlowData(newData)
     events.onChange?.({
       action: 'ADD_BRANCH',
       flow: newData,
       addNodes: [newBranch],
       updateNodes: [targetNode],
     })
+    setFlowData(newData)
     events.afterAddBranch?.({ targetNode })
   }, [events, setFlowData, typeConfig])
 
@@ -308,21 +383,20 @@ const FlowProvider: React.FC<FlowProviderProps> = (props) => {
   }) => {
     const { nodeKey, newProperties } = params
     const currentNode = getNodeByKey(nodeKey)
-    if (currentNode) {
-      currentNode.properties = newProperties
-      const newData = { ...flowData }
-      setFlowDataState(newData)
-      setHistory(
-        history.map((item, index) =>
-          index === history.length - 1 ? newData : item,
-        ),
-      )
-      events.onChange?.({
-        action: 'UPDATE_NODE',
-        flow: newData,
-        updateNodes: [currentNode],
-      })
-    }
+    if (!currentNode) return
+    currentNode.properties = newProperties
+    const newData = { ...flowData }
+    setFlowDataState(newData)
+    setHistory(
+      history.map((item, index) =>
+        index === history.length - 1 ? newData : item,
+      ),
+    )
+    events.onChange?.({
+      action: 'UPDATE_NODE',
+      flow: newData,
+      updateNodes: [currentNode],
+    })
   }, [flowData, getNodeByKey, history])
 
   /**
@@ -379,6 +453,7 @@ const FlowProvider: React.FC<FlowProviderProps> = (props) => {
       flowData,
       flowMap,
       typeConfig,
+      onAddLoopNode: events.onAddLoopNode || onAddLoopNode,
       onAddNode: events.onAddNode || onAddNode,
       onDeleteNode: events.onDeleteNode || onDeleteNode,
       onAddBranch: events.onAddBranch || onAddBranch,
@@ -404,6 +479,7 @@ const FlowProvider: React.FC<FlowProviderProps> = (props) => {
     flowData,
     flowMap,
     typeConfig,
+    events.onAddLoopNode,
     events.onAddNode,
     events.onDeleteNode,
     events.onAddBranch,

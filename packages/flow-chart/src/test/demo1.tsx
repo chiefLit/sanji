@@ -48,6 +48,11 @@ const typeConfig = {
     nodeTitle: '一般',
     renderType: RenderTypeEnum.Normal,
   },
+  Loop: {
+    nodeTitle: '循环',
+    renderType: RenderTypeEnum.Loop,
+    nodeType: 'Loop',
+  },
   Exclusive: {
     nodeTitle: '排他',
     renderType: RenderTypeEnum.Exclusive,

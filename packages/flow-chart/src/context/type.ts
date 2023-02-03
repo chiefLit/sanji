@@ -11,6 +11,7 @@ export interface FlowContextProps
     | 'onClickAddNodeBtn'
     | 'onClickNode'
     | 'renderToolbar'
+    | 'onAddLoopNode'
     | 'onAddNode'
     | 'onDeleteNode'
     | 'onAddBranch'

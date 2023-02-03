@@ -4,8 +4,8 @@ import { CloseOutlined } from '@ant-design/icons'
 import { LinkedList, RenderTypeEnum } from '../../types'
 import { FlowContext } from '../../context'
 import { EditableTitle } from '../editable-title/editable-title'
-import './style.less'
 import { isBranch } from '../../utils'
+import './style.less'
 
 interface NodeCardProps {
   data: LinkedList
@@ -42,7 +42,7 @@ const NodeCard: React.FC<NodeCardProps> = (props) => {
 
   const handleClose = (e?: React.MouseEvent<HTMLElement, MouseEvent>) => {
     e?.stopPropagation()
-    if (data.renderType === RenderTypeEnum.Normal) {
+    if (data.renderType === RenderTypeEnum.Normal || data.renderType === RenderTypeEnum.Loop) {
       onDeleteNode?.({ targetNodeKey: data.nodeKey })
     } else {
       onDeleteBranch?.({ targetBranchKey: data.nodeKey })

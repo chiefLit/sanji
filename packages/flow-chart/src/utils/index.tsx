@@ -24,6 +24,9 @@ export function convertMap2LinkedList(mapData: Record<string, Node>, flowKey: st
   if (startNode?.nextNodeKey) {
     startNode.nextNode = convertMap2LinkedList(mapData, startNode.nextNodeKey)
   }
+  if (startNode?.loopNodeKey) {
+    startNode.loopNode = convertMap2LinkedList(mapData, startNode.loopNodeKey)
+  }
   if (startNode.conditionNodeKeys && startNode.conditionNodeKeys.length) {
     startNode.conditionNodes = startNode.conditionNodeKeys.map(key => {
       return convertMap2LinkedList(mapData, key)
@@ -43,6 +46,9 @@ export const convertLinkedList2Map = (data: LinkedList) => {
   result[data.nodeKey] = Object.assign(data)
   if (data?.nextNode) {
     Object.assign(result, convertLinkedList2Map(data?.nextNode))
+  }
+  if (data?.loopNode) {
+    Object.assign(result, convertLinkedList2Map(data?.loopNode))
   }
   if (data?.conditionNodes) {
     data?.conditionNodes.forEach((node) => {
@@ -71,6 +77,9 @@ export const findAllNodesFormLL = (node: LinkedList) => {
   result.push(node)
   if (node.nextNode) {
     result.push(...findAllNodesFormLL(node.nextNode))
+  }
+  if (node.loopNode) {
+    result.push(...findAllNodesFormLL(node.loopNode))
   }
   if (node.conditionNodes) {
     node.conditionNodes.forEach(item => {

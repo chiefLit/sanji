@@ -45,6 +45,13 @@ export interface FlowTableProps {
   onAddNode?: (params: { previousNodeKey: string; nodeType: string; extraProperties?: Record<string, unknown> }) => void
 
   /**
+   * 添加循环开始节点
+   * @param params 
+   * @returns 
+   */
+  onAddLoopNode?: (params: { previousNodeKey: string; nodeType: string; extraProperties?: Record<string, unknown> }) => void
+
+  /**
    * 点击删除节点按钮事件，如果绑定该事件默认的逻辑将不执行。
    */
   onDeleteNode?: (params: { targetNodeKey: string }) => void
@@ -62,12 +69,12 @@ export interface FlowTableProps {
   /**
    * 添加节点前回调
    */
-  beforeAddNode?: (params: { previousNode: Node; nodeType: string }) => void
+  beforeAddNode?: (params: { previousNode: Node; nodeType: string, isLoop?: boolean }) => void
 
   /**
    * 添加节点后回调
    */
-  afterAddNode?: (parmas: { previousNode: Node; targetNode: Node }) => void
+  afterAddNode?: (parmas: { previousNode: Node; targetNode: Node, isLoop?: boolean }) => void
 
   /**
    * 删除节点前回调
@@ -102,7 +109,7 @@ export interface FlowTableProps {
   /**
    * 点击添加节点回调函数，设置该回调之后，不执行默认的添加节点逻辑需要自定义
    */
-  onClickAddNodeBtn?: (params: { previousNode: Node }) => void
+  onClickAddNodeBtn?: (params: { previousNode: Node, isLoop?: boolean }) => void
   /**
    * 点击节点回调，设置该回调之后，不执行默认的逻辑
    */
@@ -139,10 +146,12 @@ export type Node<T = any> = {
   renderType: RenderTypeEnum | keyof typeof RenderTypeEnum;
   properties?: T;
   conditionNodeKeys?: string[];
+  loopNodeKey?: string;
 }
 
 export type LinkedList = Node & {
   nextNode?: LinkedList
+  loopNode?: LinkedList
   conditionNodes?: LinkedList[]
 }
 
@@ -171,6 +180,10 @@ export enum RenderTypeEnum {
    * 普通节点
    */
   'Normal' = 'Normal',
+  /**
+   * 循环节点
+   */
+  'Loop' = 'Loop',
   /**
    * 条件节点
    */

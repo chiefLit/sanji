@@ -1,0 +1,52 @@
+@import "../../styles/varible.less";
+
+.@{prefixCls}-loop-node-box-wrapper {
+  // width: 240px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  // background: rgba(20, 20, 58, 0.4);
+  .@{prefixCls}-loop-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 10px;
+    margin: 0 10px;
+    &::after {
+      content: "";
+      z-index: 0;
+      position: absolute;
+      top: 30px;
+      right: 0;
+      bottom: 0;
+      width: 50%;
+      border: 1px solid @lineColor;
+      border-top: 0;
+      border-left: 0;
+    }
+    &::before {
+      content: "";
+      z-index: 0;
+      position: absolute;
+      top: 30px;
+      right: 0;
+      width: 50%;
+      border-top: 1px solid @lineColor;
+    }
+  }
+  // &:hover {
+  //   border: 1px solid #0066fe;
+  //   border-radius: 8px;
+  //   box-shadow: 0 2px 12px rgba(229, 231, 241, 0.6);
+  //   .@{prefixCls}-node-card-mask {
+  //     background-color: @hoverBackground;
+  //   }
+  //   // box-shadow: 0 0 0 2px $hoverBackground;
+  //   .@{prefixCls}-node-card-close-button {
+  //     z-index: 2;
+  //     display: block;
+  //   }
+  // }
+}

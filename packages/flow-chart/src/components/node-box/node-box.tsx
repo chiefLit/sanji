@@ -4,6 +4,8 @@ import { AddNodeButton } from '../add-node-button/add-node-button'
 import { NodeCard } from './node-card'
 import { FlowContext } from '../../context'
 import { BranchBox } from '../branch-box'
+import { isBranch } from '../../utils'
+import { LoopBox } from '../loop-box'
 import './style.less'
 
 interface NodeBoxProps {
@@ -23,29 +25,30 @@ const NodeBox: React.FC<NodeBoxProps> = (props) => {
   // 防止结束节点闪动
   if (!flowMap) return null
 
+  const _isBranch = data?.conditionNodes && isBranch(data?.renderType)
+  const _isLoop = data?.renderType === RenderTypeEnum.Loop
+
+  const renderNormalNode = () => (
+    <div
+      className={`
+        ${prefixCls}-node-box-wrapper 
+        ${data.renderType === RenderTypeEnum.End ? `${prefixCls}-node-box-end-wrapper` : ''}
+      `}
+    >
+      {
+        renderNode
+          ? renderNode({ targetNode: data, flowContext })
+          : <NodeCard data={data} />
+      }
+      {data.renderType !== RenderTypeEnum.End && <AddNodeButton data={data} hideButton={hideAddNode} />}
+    </div>
+  )
+
   return (
     <>
-      {data?.conditionNodes &&
-        data?.renderType !== 'Normal' &&
-        data?.renderType !== RenderTypeEnum.End ? (
-        <BranchBox data={data} />
-      ) : (
-        <div
-          className={`
-          ${prefixCls}-node-box-wrapper 
-          ${data.renderType === RenderTypeEnum.End ? `${prefixCls}-node-box-end-wrapper` : ''}
-          `}
-        >
-          {renderNode ? (
-            renderNode({ targetNode: data, flowContext })
-          ) : (
-            <NodeCard data={data} />
-          )}
-          {data.renderType !== RenderTypeEnum.End && (
-            <AddNodeButton data={data} hideButton={hideAddNode} />
-          )}
-        </div>
-      )}
+      {_isBranch && <BranchBox data={data} />}
+      {_isLoop && <LoopBox data={data} />}
+      {!_isBranch && !_isLoop && renderNormalNode()}
       {data?.nextNode ? <NodeBox data={data?.nextNode} /> : null}
     </>
   )
