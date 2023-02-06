@@ -1,7 +1,8 @@
-import { HorizontalFlow } from './components/HorizontalFlow'
+import HorizontalFlow from './components/HorizontalFlow'
+import EasyConnect from './components/EasyConnect'
 function App() {
   return (
-    <HorizontalFlow />
+    <EasyConnect />
   )
 }
 

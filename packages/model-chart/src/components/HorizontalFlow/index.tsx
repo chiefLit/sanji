@@ -42,21 +42,24 @@ const HorizontalFlow = () => {
   const onConnect = useCallback((params) => setEdges((els) => addEdge(params, els)), []);
 
   return (
-    <ReactFlow
-      nodes={nodes}
-      edges={edges}
-      onNodesChange={onNodesChange}
-      onEdgesChange={onEdgesChange}
-      onConnect={onConnect}
-      selectNodesOnDrag={false}
-      className="validationflow"
-      nodeTypes={nodeTypes}
-      onConnectStart={onConnectStart}
-      onConnectEnd={onConnectEnd}
-      fitView
-      attributionPosition="bottom-left"
-    />
+    <div>
+      <button>添加模型</button>
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        selectNodesOnDrag={false}
+        className="validationflow"
+        nodeTypes={nodeTypes}
+        onConnectStart={onConnectStart}
+        onConnectEnd={onConnectEnd}
+        fitView
+        attributionPosition="bottom-left"
+      />
+    </div>
   );
 };
 
-export { HorizontalFlow };
+export default HorizontalFlow;
