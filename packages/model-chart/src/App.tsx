@@ -1,8 +1,7 @@
-import HorizontalFlow from './components/HorizontalFlow'
-import EasyConnect from './components/EasyConnect'
+import { ReactFlowDemo } from './components'
 function App() {
   return (
-    <EasyConnect />
+    <ReactFlowDemo />
   )
 }
 
