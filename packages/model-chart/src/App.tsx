@@ -1,7 +1,7 @@
-import { ReactFlowDemo } from './components'
+import { GoJsDemo } from './components'
 function App() {
   return (
-    <ReactFlowDemo />
+    <GoJsDemo />
   )
 }
 
