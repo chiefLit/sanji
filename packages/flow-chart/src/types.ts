@@ -177,6 +177,14 @@ export type TypeConfigItem = {
 
 export enum RenderTypeEnum {
   /**
+   * 开始节点
+   */
+  'Start' = 'Start',
+  /**
+   * 结束节点
+   */
+  'End' = 'End',
+  /**
    * 普通节点
    */
   'Normal' = 'Normal',
@@ -184,10 +192,6 @@ export enum RenderTypeEnum {
    * 循环节点
    */
   'Loop' = 'Loop',
-  /**
-   * 条件节点
-   */
-  'Condition' = 'Condition',
   /**
    * 排他节点
    */
@@ -197,9 +201,9 @@ export enum RenderTypeEnum {
    */
   'Inclusive' = 'Inclusive',
   /**
-   * 结束节点
+   * 条件节点
    */
-  'End' = 'End',
+  'Condition' = 'Condition',
 }
 
 /**

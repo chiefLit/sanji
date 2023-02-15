@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 import { Button, Divider } from 'antd'
-import { MinusOutlined, PlusOutlined, ArrowLeftOutlined, ArrowRightOutlined, RetweetOutlined } from '@ant-design/icons'
+import { MinusOutlined, PlusOutlined, ArrowLeftOutlined, ArrowRightOutlined, RetweetOutlined, RollbackOutlined, CompressOutlined, ExpandOutlined } from '@ant-design/icons'
 import { FlowContext } from '../../context'
 import { StageContext } from '../move-stage/context'
 import './style.less'
@@ -12,7 +12,7 @@ interface ToolbarProps { }
  * @returns
  */
 const Toolbar: React.FC<ToolbarProps> = () => {
-  // const [fullscreened, setFullscreened] = React.useState(false)
+  const [fullscreened, setFullscreened] = React.useState(false)
   const { zoom, setZoom, setPositionX, setPositionY } = React.useContext(StageContext)
   const { flowData, prefixCls, forward, revoke, renderToolbar, flowHistory, readonly } = React.useContext(FlowContext)
 
@@ -38,7 +38,7 @@ const Toolbar: React.FC<ToolbarProps> = () => {
   const btns = {
     revoke: <Button
       className={`${prefixCls}-toolbar-btn`}
-      icon={<ArrowLeftOutlined />}
+      icon={<RollbackOutlined />}
       type="text"
       size="small"
       disabled={disabledRevoke}
@@ -50,8 +50,8 @@ const Toolbar: React.FC<ToolbarProps> = () => {
     />,
 
     forward: <Button
-      className={`${prefixCls}-toolbar-btn`}
-      icon={<ArrowRightOutlined />}
+      className={`${prefixCls}-toolbar-btn forward`}
+      icon={<RollbackOutlined />}
       type="text"
       size="small"
       disabled={disabledForward}
@@ -94,8 +94,19 @@ const Toolbar: React.FC<ToolbarProps> = () => {
         setPositionX(0)
         setPositionY(0)
       }}
+    />,
+    full: <Button
+      className={`${prefixCls}-toolbar-btn`}
+      type="text"
+      icon={fullscreened ? <CompressOutlined /> : <ExpandOutlined />}
+      size="small"
+      onClick={(e) => {
+        e.stopPropagation()
+        setFullscreened(!fullscreened)
+      }}
     />
   }
+
 
   return (
     <div className={`${prefixCls}-toolbar-wrapper`}>
@@ -115,14 +126,9 @@ const Toolbar: React.FC<ToolbarProps> = () => {
         {btns.reset}
         {renderToolbar?.(flowData, { forward, revoke })}
       </div>
-      {/* <div className={`${prefixCls}-toolbar-right`}>
-        <div
-          className={`${prefixCls}-toolbar-item`}
-          onClick={fullscreened ? exitFullscreen : launchFullscreen}
-        >
-          {fullscreened ? <FullscreenExitOutlined /> : <FullscreenOutlined />}
-        </div>
-      </div> */}
+      <div className={`${prefixCls}-toolbar-right`}>
+        {btns.full}
+      </div>
     </div>
   )
 }

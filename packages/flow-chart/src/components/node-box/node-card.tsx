@@ -56,65 +56,55 @@ const NodeCard: React.FC<NodeCardProps> = (props) => {
     })
   }
 
-  const renderEnd = () => {
-    return (
-      <div className={`${prefixCls}-end-node-wrapper`}>
-        {typeConfig[data.nodeType]?.icon as React.ReactElement}
-        <span style={{ marginLeft: '4px' }}>结束</span>
-      </div>
-    )
-  }
+  const isStartOrEnd = data.renderType === RenderTypeEnum.Start || data.renderType === RenderTypeEnum.End
 
-  const renderNotEnd = () => {
-    return (
-      <section className={`${prefixCls}-node-card-wrapper`} ref={divRef}>
-        {/* 删除按钮 */}
-        {data.nodeKey !== flowData.nodeKey && !readonly && !hideDeleteNode && (
-          <Popconfirm
-            overlayStyle={{ width: '220px' }}
-            title={isBranch(data.renderType) ? '确定删除该分支，同时删除该分支下所有节点吗？' : '确定删除该节点吗？'}
-            getTooltipContainer={() => divRef.current!}
-            onConfirm={handleClose}
-            placement="rightTop"
-          >
-            <Button
-              className={`${prefixCls}-node-card-close-button`}
-              type="text"
-              icon={<CloseOutlined />}
-              size="small"
-            />
-          </Popconfirm>
-        )}
-        <div
-          className={`${prefixCls}-node-card-mask`}
-          onClick={() => {
-            if (!customNodeProperties) setEditingNode(data)
-            onClickNode?.({ targetNode: data })
-          }}
+  return (
+    <section className={`${prefixCls}-node-card-wrapper`} ref={divRef}>
+      {/* 删除按钮 */}
+      {data.nodeKey !== flowData.nodeKey && !readonly && !hideDeleteNode && !isStartOrEnd && (
+        <Popconfirm
+          overlayStyle={{ width: '200px' }}
+          title={isBranch(data.renderType) ? '确定删除该分支，同时删除该分支下所有节点吗？' : '确定删除该节点吗？'}
+          getTooltipContainer={() => divRef.current!}
+          onConfirm={handleClose}
+          placement="rightTop"
         >
-          {/* 头 */}
-          <header className={`${prefixCls}-node-card-title`}>
-            {typeConfig[data.nodeType]?.icon as React.ReactElement}
-            <EditableTitle
-              disabled={readonly}
-              title={data?.properties?.nodeTitle}
-              onTitleChange={hanldeChangeTitle}
-            />
-          </header>
-          {/* 身 */}
-          <article className={`${prefixCls}-node-card-content`}>
-            <Tooltip placement="bottom" title={nodeContent} arrowPointAtCenter>
-              <span style={isErrorContent ? { color: '#FF4647' } : {}}>
-                {nodeContent}
-              </span>
-            </Tooltip>
-          </article>
-        </div>
-      </section>
-    )
-  }
+          <Button
+            className={`${prefixCls}-node-card-close-button`}
+            type="text"
+            icon={<CloseOutlined />}
+            size="small"
+          />
+        </Popconfirm>
+      )}
+      <div
+        className={`${prefixCls}-node-card-mask`}
+        onClick={() => {
+          if (!customNodeProperties) setEditingNode(data)
+          onClickNode?.({ targetNode: data })
+        }}
+      >
+        {/* 头 */}
+        <header className={`${prefixCls}-node-card-title`}>
+          {typeConfig[data.nodeType]?.icon as React.ReactElement}
+          <EditableTitle
+            disabled={readonly || isStartOrEnd}
+            title={data?.properties?.nodeTitle || data?.properties?.name}
+            onTitleChange={hanldeChangeTitle}
+          />
+        </header>
+        {/* 身 */}
+        <article className={`${prefixCls}-node-card-content`}>
+          <Tooltip placement="bottom" title={nodeContent} arrowPointAtCenter>
+            <span style={isErrorContent ? { color: '#FF4647' } : {}}>
+              {nodeContent}
+            </span>
+          </Tooltip>
+        </article>
+      </div>
+    </section>
+  )
 
-  return data.renderType === RenderTypeEnum.End ? renderEnd() : renderNotEnd()
 }
 
 export { NodeCard }

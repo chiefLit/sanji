@@ -8,6 +8,7 @@ import { MoveStage } from './components/move-stage'
 import { StageProvider } from './components/move-stage/context'
 import { NodeBox } from './components/node-box/node-box'
 import { convertLinkedList2Map, convertMap2LinkedList } from './utils'
+import { convertLinkedList2SchemaNodes, convertSchemaNodes2LinkedList } from './utils/schema'
 import './styles/index.less'
 
 /**
@@ -15,6 +16,7 @@ import './styles/index.less'
  */
 export type FlowTableInstance = FlowContextProps
 export { convertLinkedList2Map, convertMap2LinkedList }
+export { convertLinkedList2SchemaNodes, convertSchemaNodes2LinkedList }
 
 const FlowEngine = forwardRef<FlowTableInstance>(function FlowEngine(_, ref) {
   const flowContext = React.useContext(FlowContext)

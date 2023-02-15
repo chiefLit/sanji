@@ -1,5 +1,5 @@
 import FlowChart, { convertMap2LinkedList } from '../index'
-import { RenderTypeEnum, LinkedList, Node } from '../types'
+import { RenderTypeEnum, LinkedList, Node, TypeConfigData } from '../types'
 
 export const mock1: LinkedList = {
   nodeKey: '1',
@@ -43,7 +43,7 @@ const mock1map: Record<string, Node> = {
   }
 }
 
-const typeConfig = {
+const typeConfig: TypeConfigData = {
   Normal: {
     nodeTitle: '一般',
     renderType: RenderTypeEnum.Normal,
