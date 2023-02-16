@@ -176,15 +176,22 @@ const FlowProvider: React.FC<FlowProviderProps> = (props) => {
 
     if (isBranch(mainConf.renderType) && mainConf?.conditionNodeType && mainConf?.condition) {
       const subConf = typeConfig?.[mainConf?.conditionNodeType]
-      newSon.conditionNodes = mainConf.condition.defaultPropertiesList.map(
-        (p) => ({
-          nodeKey: getUniqId(),
-          nodeType: mainConf.conditionNodeType as string,
-          renderType: subConf.renderType,
-          condition: true,
-          properties: { ...p },
-          preNodeKey: newSon.nodeKey,
-        }),
+      const defaultPropertiesList = mainConf.condition.defaultPropertiesList || []
+      newSon.conditionNodes = defaultPropertiesList.map(
+        (p, i) => {
+          // 排他分支的最后一条分支是else
+          const renderType = mainConf.renderType === RenderTypeEnum.Exclusive && i === defaultPropertiesList.length - 1
+            ? RenderTypeEnum.ConditionElse
+            : RenderTypeEnum.Condition
+          return {
+            nodeKey: getUniqId(),
+            nodeType: mainConf.conditionNodeType as string,
+            renderType: renderType,
+            condition: true,
+            properties: { ...p },
+            preNodeKey: newSon.nodeKey,
+          }
+        },
       )
       newSon.conditionNodeKeys = newSon.conditionNodes.map(node => node.nodeKey)
       // 添加分支节点
@@ -258,7 +265,7 @@ const FlowProvider: React.FC<FlowProviderProps> = (props) => {
     const newBranch = {
       nodeKey: getUniqId(),
       nodeType: branchNTData.conditionNodeType!,
-      renderType: targetNode.renderType,
+      renderType: RenderTypeEnum.Condition,
       preNodeKey: targetNode.nodeKey,
       properties: {
         nodeTitle: conditionNTData.nodeTitle || branchNTData?.conditionNodeType,
@@ -294,7 +301,8 @@ const FlowProvider: React.FC<FlowProviderProps> = (props) => {
     events.beforeDeleteBranch?.({ targetBranch })
     if (!flowMap || !targetBranch.preNodeKey) return
     const previousNode = flowMap[targetBranch.preNodeKey]
-    if (previousNode.conditionNodes?.length && previousNode.conditionNodes?.length > 2) {
+    console.log(previousNode)
+    if (previousNode?.conditionNodes?.length && previousNode?.conditionNodes?.length > 2) {
       previousNode.conditionNodes = previousNode.conditionNodes?.filter((item) => item.nodeKey !== targetBranch.nodeKey)
       previousNode.conditionNodeKeys = previousNode.conditionNodes.map(node => node.nodeKey)
       // 分支大于2 ok 

@@ -14,24 +14,6 @@ export type SchemaNode = {
 }
 
 /**
- * 转换节点类型至渲染类型
- * @param nodeType 
- * @returns RenderType
- */
-export const getRenderTypeFormNodeType = (nodeType: string) => {
-  const typeMap: Record<string, RenderTypeEnum> = {
-    start: RenderTypeEnum.Start,
-    end: RenderTypeEnum.End,
-    normal: RenderTypeEnum.Normal,
-    exclusive: RenderTypeEnum.Exclusive,
-    inclusive: RenderTypeEnum.Inclusive,
-    condition: RenderTypeEnum.Condition,
-    loop: RenderTypeEnum.Loop,
-  }
-  return typeMap[nodeType]
-}
-
-/**
  * 流程节点元数据转换成链表结构
  * This is a TypeScript function that takes an array of schema nodes and recursively converts them into a linked list of nodes. 
  * The function starts with a specified node key and creates a linked list node based on the corresponding schema node. 
@@ -87,7 +69,7 @@ export const convertSchemaNodes2LinkedList = (props: {
         nodes: schemaNode.children || [],
         typeConfig,
         nodeKey: conditionKey,
-        preNodeKey: node.preNodeKey
+        preNodeKey: node.nodeKey
       })
       return branchNode
     })

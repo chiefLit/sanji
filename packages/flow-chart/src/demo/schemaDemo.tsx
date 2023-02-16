@@ -201,7 +201,7 @@ const typeConfig: TypeConfigData = {
     condition: {
       defaultPropertiesList: [
         {
-          nodeTitle: '条件',
+          nodeTitle: '分支',
           propertiesType: 'Type1',
         },
         {
@@ -232,6 +232,11 @@ const typeConfig: TypeConfigData = {
   Condition: {
     nodeTitle: '分支',
     renderType: RenderTypeEnum.Condition,
+    propertiesType: 'Type1',
+  },
+  ConditionElse: {
+    nodeTitle: 'else',
+    renderType: RenderTypeEnum.ConditionElse,
     propertiesType: 'Type1',
   },
 }

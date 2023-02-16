@@ -4,7 +4,6 @@ import { CloseOutlined } from '@ant-design/icons'
 import { LinkedList, RenderTypeEnum } from '../../types'
 import { FlowContext } from '../../context'
 import { EditableTitle } from '../editable-title/editable-title'
-import { isBranch } from '../../utils'
 import './style.less'
 
 interface NodeCardProps {
@@ -42,10 +41,10 @@ const NodeCard: React.FC<NodeCardProps> = (props) => {
 
   const handleClose = (e?: React.MouseEvent<HTMLElement, MouseEvent>) => {
     e?.stopPropagation()
-    if (data.renderType === RenderTypeEnum.Normal || data.renderType === RenderTypeEnum.Loop) {
-      onDeleteNode?.({ targetNodeKey: data.nodeKey })
-    } else {
+    if (data.renderType === RenderTypeEnum.Condition || data.renderType === RenderTypeEnum.ConditionElse) {
       onDeleteBranch?.({ targetBranchKey: data.nodeKey })
+    } else {
+      onDeleteNode?.({ targetNodeKey: data.nodeKey })
     }
   }
 
@@ -58,13 +57,24 @@ const NodeCard: React.FC<NodeCardProps> = (props) => {
 
   const isStartOrEnd = data.renderType === RenderTypeEnum.Start || data.renderType === RenderTypeEnum.End
 
+  // 是否可删除节点
+  const isDeletable = data.preNodeKey
+    && !readonly
+    && !hideDeleteNode
+    && !isStartOrEnd
+    && data.renderType !== RenderTypeEnum.ConditionElse
+
   return (
     <section className={`${prefixCls}-node-card-wrapper`} ref={divRef}>
       {/* 删除按钮 */}
-      {data.nodeKey !== flowData.nodeKey && !readonly && !hideDeleteNode && !isStartOrEnd && (
+      {isDeletable && (
         <Popconfirm
           overlayStyle={{ width: '200px' }}
-          title={isBranch(data.renderType) ? '确定删除该分支，同时删除该分支下所有节点吗？' : '确定删除该节点吗？'}
+          title={
+            data.renderType === RenderTypeEnum.Condition
+              ? '确定删除该分支，同时删除该分支下所有节点吗？'
+              : '确定删除该节点吗？'
+          }
           getTooltipContainer={() => divRef.current!}
           onConfirm={handleClose}
           placement="rightTop"

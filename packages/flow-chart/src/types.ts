@@ -204,6 +204,10 @@ export enum RenderTypeEnum {
    * 条件节点
    */
   'Condition' = 'Condition',
+  /**
+   * 条件节点
+   */
+  'ConditionElse' = 'ConditionElse',
 }
 
 /**

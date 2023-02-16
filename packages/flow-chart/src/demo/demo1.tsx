@@ -61,7 +61,7 @@ const typeConfig: TypeConfigData = {
     condition: {
       defaultPropertiesList: [
         {
-          nodeTitle: '条件',
+          nodeTitle: '分支',
           propertiesType: 'Type1',
         },
         {

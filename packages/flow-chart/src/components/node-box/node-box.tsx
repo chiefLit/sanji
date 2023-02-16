@@ -29,12 +29,7 @@ const NodeBox: React.FC<NodeBoxProps> = (props) => {
   const _isLoop = data?.renderType === RenderTypeEnum.Loop
 
   const renderNormalNode = () => (
-    <div
-      className={`
-        ${prefixCls}-node-box-wrapper 
-        ${data.renderType === RenderTypeEnum.End ? `${prefixCls}-node-box-end-wrapper` : ''}
-      `}
-    >
+    <div className={`${prefixCls}-node-box-wrapper ${data.renderType === RenderTypeEnum.End ? `${prefixCls}-node-box-end-wrapper` : ''}`}>
       {
         renderNode
           ? renderNode({ targetNode: data, flowContext })
